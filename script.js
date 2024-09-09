@@ -2,6 +2,9 @@ import StaticArray from "./StaticArray.js";
 
 window.addEventListener("load", start);
 
+/**/
+
+
 // Hardcoded sizes - should probably be dynamic with regards to the CSS ...
 const gamesizes = {
   width: 800,
