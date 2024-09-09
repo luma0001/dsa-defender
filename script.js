@@ -2,8 +2,36 @@ import StaticArray from "./StaticArray.js";
 
 window.addEventListener("load", start);
 
-/**/
+/*
+Emils løsning: Vi laver et sort static array - her kan vi tilføje hvis noget er null, når noget "fjernes" gør vi det null!
 
+A:
+
+Her har vi en enemy COUNT. 
+  Vores kode har noget der flytter en enemy ... men ikke tjekker på om pladser i arrayet er null eller undefined?
+  
+  for(let i=0; i < usedSpaces; i++){}
+  
+  Hurtigt at sætte en ny en, langsomt at fjerne en enemy. Når en enemy dør, så flytter vi alle elmenter en tak ned. 3 ud af 5 så skal 4 og 5 rykkes -1.
+  Det ville kunne tage "O af n"
+
+B: 
+  hvad gør vi hvis index 3 ud af 5 bliver skudt? Hvis vi nu looper til vi har en tom plads, og så indsætter den der. Det kan tage O af n
+
+C:
+Kenneth - best of both worlds?!
+Hav et array med tomme pladser. Man flytter bare problemet til et nyt static array med samme problemer!
+
+D: 
+
+Vi laver en first enemy. 
+ny enemy hvor vi får first enemy til at pege på den næste enemy, og så viddere.
+Når en enemy dør så peger dens forgænger blot på den slettedes efterfølger - vi benytter pointeres. 
+
+
+
+Lav et nyt array - hvor vi looper på det gamle og kopiere det over i vores nye array - og tilføjer det nye enemy element.
+*/
 
 // Hardcoded sizes - should probably be dynamic with regards to the CSS ...
 const gamesizes = {
@@ -24,6 +52,9 @@ function start() {
   resetGame();
   // begin the loop
   requestAnimationFrame(loop);
+
+  // vi putter variablen ud i window
+  window.firstEnemy = firstEnemy;
 }
 
 function resetGame() {
@@ -37,10 +68,12 @@ function resetGame() {
 // **************************************
 
 // the list of enemies is an array of size 5 - but it could be larger ...
-const enemies = new StaticArray(5); 
+const enemies = new StaticArray(5);
+
+let firstEnemy = null;
 
 function createInitialEnemies() {
- // create five enemies
+  // create five enemies
   for (let i = 0; i < 5; i++) {
     enemies[i] = spawnNewEnemy();
   }
@@ -50,14 +83,21 @@ function createInitialEnemies() {
 function spawnNewEnemy() {
   const enemy = createEnemy();
   // TODO: need to add new enemy to list of enemies, here!
-  
+  if (firstEnemy == null) {
+    firstEnemy = enemy;
+  } else {
+    // Vi peger på det som firstEnemy peger på
+    enemy.next = firstEnemy;
+    // og så gør vi enemy til first enemy - vi laver altså en liste og putter enemies ind i bunden.
+    firstEnemy = enemy;
+  }
+
   return enemy;
 }
 
 // removes an enemy object from the list of enemies
 function removeEnemy(enemy) {
   // TODO: need to find enemy object in list of enemies, and remove it
-  
 }
 
 // returns the number of enemy objects in the list of enemies
@@ -168,7 +208,8 @@ function loop() {
   // ****
   // Loop through all enemies - and move them until the reach the bottom
   // ****
-  for (const enemy of enemies) {
+  let enemy = firstEnemy;
+  while (enemy) {
     // TODO: Only look at actual enemy objects from the list ...
 
     // ignore enemies who are dying or crashing - so they don't move any further
@@ -179,6 +220,8 @@ function loop() {
         enemyHitBottom(enemy);
       }
     }
+
+    enemy = enemy.next;
   }
 
   // Check for game over
@@ -196,9 +239,12 @@ function loop() {
   // ****
   // Loop through all enemies - and update their visuals
   // ****
-  for (const enemy of enemies) {
+
+  enemy = firstEnemy;
+  while (enemy) {
     // TODO: Only do this for actual enemy objects from the list ...
     displayEnemy(enemy);
+    enemy = enemy.next;
   }
 
   // update health display
@@ -212,7 +258,7 @@ function loop() {
 
 function enemyHitBottom(enemy) {
   console.log("Enemy attacked base!");
-  
+
   // lose health
   health -= 5;
   // display crash on enemy
